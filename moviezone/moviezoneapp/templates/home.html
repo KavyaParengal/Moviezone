@@ -1,0 +1,170 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieZone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        body {
+            background: linear-gradient(to right, black,rgb(5, 65, 75), rgb(5, 75, 101));
+        }
+        p{
+            color: white;
+            margin: 15px;
+            font-size: 35px;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgb(5, 65, 75);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            box-shadow: 0px 4px 10px grey;
+            cursor: pointer;
+        
+        }
+
+        .floating-btn:hover {
+            background-color: rgb(12, 89, 103);
+            color: white;
+        }
+        .favorite-icon {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            text-decoration: none;
+            text-shadow: 0px 2px 5px black;
+        }
+
+        /* When active (liked) */
+        .favorite-icon.active {
+            color: red;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow">
+            <div class="container-fluid">
+
+                <!-- 🔷 Logo + Website Name -->
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                    <img src="{% static 'images/logo.png' %}" alt="Logo" width="40" height="40" class="me-2 rounded-circle">
+                    <span class="fw-bold" style="color: rgb(10, 69, 80);">MovieZone</span>
+                </a>
+
+                <!-- Toggle for mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- 🔷 Right Side Icons -->
+                <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+                    <form class="d-flex mx-auto" method="GET" action="">
+                        <input class="form-control me-2 rounded-pill px-3" type="search" name="q" placeholder="Search movies..." value="{{ query }}" style="width: 300px;">
+                        <button class="btn btn-outline-dark rounded-pill px-4" type="submit">Search</button>
+                    </form>
+                    <ul class="navbar-nav align-items-center">
+
+                        <!-- home -->
+                        <li class="nav-item mx-2">
+                           <a href="{% url 'home' %}">
+                                <img src="{% static 'images/home.png' %}" alt="Logo" width="30" height="30">
+                           </a>
+                        </li>
+
+                        <!-- Wishlist -->
+                        <li class="nav-item mx-2">
+                           <a href="{% url 'favorite_display' %}">
+                                <img src="{% static 'images/Wishlist.png' %}" alt="Logo" width="30" height="30">
+                           </a>
+                        </li>
+
+                        <!-- Profile -->
+                        <li class="mx-2 nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#"  id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <img src="{% static 'images/account.png' %}" alt="Logo" width="30" height="30">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'profile_view' %}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'single_user_movies' %}">Your movies</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout_user' %}">Logout</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+
+        <p><strong>Hello,</strong> {{ request.session.username }}</p>
+
+        <div class="row m-3">
+            {% for movie in movies %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="position-relative">
+                        <img src="{% static 'images/logo.png' %}" class="card-img-top" width="450" height="400">
+
+                        <!-- ❤️ Favorite Icon -->
+                        <a href="{% url 'toggle_favorite' movie.id %}" class="favorite-icon">
+                            {% if movie.id in fav_ids %}
+                                <span style="color: red;">♥</span>
+                            {% else %}
+                                <span style="color: white;">♥</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{movie.title}}</h5>
+                        <p class="card-text" style="color: black; font-size: 14px;">{{movie.description}}</p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Release Date : </strong>{{movie.release_date}}</li>
+                        <li class="list-group-item"><strong>Actors : </strong>{{movie.actors}}</li>
+                    </ul>
+
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <!-- 🎬 Trailer -->
+                        <a href="{{ movie.trailer_link }}" target="_blank" class="card-link mb-2" style="text-decoration: none;">▶ Trailer</a>
+
+                        <!-- ⭐ Rating -->
+                        <div>
+                            {% for i in "12345" %}
+                                {% if movie.rating >= forloop.counter %}
+                                    <span style="color: gold;">★</span>
+                                {% else %}
+                                    <span style="color: lightgray;">★</span>
+                                {% endif %}
+                            {% endfor %}
+
+                            <span class="ms-2">({{ movie.rating }}/5)</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="{% url 'add_movies' %}" title="Add Movie" class="floating-btn d-flex align-items-center justify-content-center text-decoration-none">
+            +
+        </a>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
+            
+            
+        </script>
+</body>
+</html>
